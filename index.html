@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Çiçek Dünyası - Türkiye'nin Online Çiçekçisi</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Dancing+Script:wght@700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; overflow: hidden; height: 100vh; width: 100vw; }
+
+        /* ======================= ÇİÇEK SEPETİ BACKGROUND ======================= */
+        #ciceksepeti-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #f5f5f5; z-index: 1;
+            transition: filter 0.8s ease, opacity 1s ease;
+        }
+        #ciceksepeti-bg.blurred { filter: blur(4px) brightness(0.7); }
+        #ciceksepeti-bg.hidden { opacity: 0; pointer-events: none; }
+
+        .cs-topbar {
+            background: #6DC911; color: white; font-size: 12px;
+            padding: 6px 40px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .cs-topbar a { color: white; text-decoration: none; margin-left: 15px; font-size: 11px; }
+
+        .cs-header {
+            background: white; padding: 12px 40px; display: flex;
+            align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .cs-logo {
+            font-size: 28px; font-weight: 800; color: #6DC911;
+            letter-spacing: -1px;
+        }
+        .cs-logo span { color: #333; }
+        .cs-search {
+            flex: 1; max-width: 500px; margin: 0 30px;
+            position: relative;
+        }
+        .cs-search input {
+            width: 100%; padding: 10px 45px 10px 18px;
+            border: 2px solid #e0e0e0; border-radius: 25px;
+            font-size: 14px; outline: none; font-family: 'Poppins', sans-serif;
+        }
+        .cs-search-icon {
+            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            color: #999; font-size: 18px;
+        }
+        .cs-header-icons { display: flex; gap: 20px; align-items: center; }
+        .cs-header-icons span {
+            font-size: 22px; cursor: pointer; color: #555;
+        }
+
+        .cs-nav {
+            background: white; border-bottom: 1px solid #eee;
+            padding: 10px 40px; display: flex; gap: 25px;
+        }
+        .cs-nav a {
+            text-decoration: none; color: #444; font-size: 13px;
+            font-weight: 500; padding: 5px 0;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .cs-nav a:hover { color: #6DC911; border-bottom-color: #6DC911; }
+
+        .cs-hero {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            margin: 20px 40px; border-radius: 15px; padding: 40px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .cs-hero h2 { font-size: 26px; color: #2e7d32; margin-bottom: 10px; }
+        .cs-hero p { color: #555; font-size: 14px; margin-bottom: 15px; }
+        .cs-hero-btn {
+            background: #6DC911; color: white; border: none;
+            padding: 10px 25px; border-radius: 25px; font-size: 14px;
+            cursor: pointer; font-weight: 600;
+        }
+        .cs-hero-emoji { font-size: 80px; }
+
+        .cs-products {
+            padding: 20px 40px;
+        }
+        .cs-products h3 { font-size: 20px; color: #333; margin-bottom: 15px; }
+        .cs-product-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        .cs-product-card {
+            background: white; border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            transition: transform 0.3s;
+        }
+        .cs-product-img {
+            height: 180px; display: flex; align-items: center;
+            justify-content: center; font-size: 70px;
+        }
+        .cs-product-info { padding: 12px 15px; }
+        .cs-product-info h4 { font-size: 13px; color: #333; margin-bottom: 5px; }
+        .cs-product-price { color: #6DC911; font-weight: 700; font-size: 18px; }
+        .cs-product-rating { color: #ffc107; font-size: 12px; margin-top: 4px; }
+
+        /* ======================= OVERLAY & POPUPS ======================= */
+        #popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(2px);
+            opacity: 0; animation: fadeIn 0.8s 1.5s forwards;
+        }
+        #popup-overlay.hidden { display: none !important; }
+
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        .popup-card {
+            background: white; border-radius: 20px; padding: 35px 40px;
+            max-width: 480px; width: 90%; text-align: center;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            animation: popupSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+        .popup-card.hidden-stage { display: none; }
+
+        @keyframes popupSlideIn {
+            from { transform: scale(0.7) translateY(-30px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .popup-cs-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #f0fbe8; padding: 6px 18px; border-radius: 20px;
+            margin-bottom: 18px; font-size: 13px; color: #6DC911; font-weight: 600;
+        }
+        .popup-cs-badge img { height: 18px; }
+
+        .popup-icon { font-size: 60px; margin-bottom: 12px; }
+        .popup-title {
+            font-size: 20px; font-weight: 700; color: #222;
+            margin-bottom: 10px; line-height: 1.4;
+        }
+        .popup-desc {
+            font-size: 14px; color: #666; margin-bottom: 20px; line-height: 1.6;
+        }
+
+        .popup-hint {
+            background: linear-gradient(135deg, #fff8e1, #fff3cd);
+            border: 1px solid #ffe082; border-radius: 12px;
+            padding: 12px 18px; margin-bottom: 18px;
+            font-size: 13px; color: #795548;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .popup-hint-icon { font-size: 20px; }
+
+        .popup-input {
+            width: 100%; padding: 14px 18px;
+            border: 2px solid #e0e0e0; border-radius: 12px;
+            font-size: 15px; outline: none; text-align: center;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            margin-bottom: 5px;
+        }
+        .popup-input:focus { border-color: #6DC911; box-shadow: 0 0 0 3px rgba(109,201,17,0.15); }
+        .popup-input.error { border-color: #e53935; box-shadow: 0 0 0 3px rgba(229,57,53,0.15); animation: shake 0.5s; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-7px); }
+            80% { transform: translateX(7px); }
+        }
+
+        .popup-error-msg {
+            color: #e53935; font-size: 12px; margin-bottom: 12px;
+            min-height: 18px; font-weight: 500;
+        }
+
+        .popup-btn {
+            background: linear-gradient(135deg, #6DC911, #5cb80b);
+            color: white; border: none; padding: 14px 40px;
+            border-radius: 12px; font-size: 16px; font-weight: 600;
+            cursor: pointer; font-family: 'Poppins', sans-serif;
+            transition: all 0.3s; width: 100%; margin-top: 5px;
+            box-shadow: 0 4px 15px rgba(109,201,17,0.3);
+        }
+        .popup-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(109,201,17,0.4); }
+        .popup-btn:active { transform: translateY(0); }
+
+        .popup-btn-ok {
+            background: linear-gradient(135deg, #6DC911, #5cb80b);
+            color: white; border: none; padding: 14px 50px;
+            border-radius: 12px; font-size: 16px; font-weight: 600;
+            cursor: pointer; font-family: 'Poppins', sans-serif;
+            transition: all 0.3s; margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(109,201,17,0.3);
+        }
+        .popup-btn-ok:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(109,201,17,0.4); }
+
+        .popup-fake-x {
+            position: absolute; top: 12px; right: 16px;
+            font-size: 20px; color: #ccc; cursor: not-allowed;
+            width: 30px; height: 30px; display: flex;
+            align-items: center; justify-content: center;
+            border-radius: 50%; transition: background 0.3s;
+            user-select: none;
+        }
+        .popup-fake-x:hover { background: #f5f5f5; }
+
+        /* Stage 3 - kırmızı tema */
+        .popup-card.stage-trick .popup-title { color: #c62828; }
+        .popup-card.stage-trick .popup-icon { animation: headShake 1s; }
+
+        @keyframes headShake {
+            0% { transform: translateX(0); }
+            6.5% { transform: translateX(-6px) rotateY(-9deg); }
+            18.5% { transform: translateX(5px) rotateY(7deg); }
+            31.5% { transform: translateX(-3px) rotateY(-5deg); }
+            43.5% { transform: translateX(2px) rotateY(3deg); }
+            50% { transform: translateX(0); }
+        }
+
+        /* Stage 5 - kandırma */
+        .popup-card.stage-gotcha .popup-title { color: #6a1b9a; }
+        .typing-dots::after {
+            content: '';
+            animation: typingDots 1.5s infinite;
+        }
+        @keyframes typingDots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
+        /* ======================= CONFETTI CANVAS ======================= */
+        #confetti-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 150; pointer-events: none; display: none;
+        }
+
+        /* ======================= FINAL SCREEN ======================= */
+        #final-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 200; display: none;
+            background: linear-gradient(135deg, #ffe6f0, #ffb6d3, #ffa0c8, #ff8abf);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+            overflow-y: auto; overflow-x: hidden;
+        }
+        #final-screen.active {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            min-height: 100vh;
+            padding-bottom: 180px;
+            animation: finalReveal 1.2s ease forwards, gradientShift 8s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes finalReveal {
+            from { opacity: 0; transform: scale(1.1); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .final-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: 48px; color: white;
+            text-shadow: 0 3px 15px rgba(0,0,0,0.15);
+            margin-bottom: 10px; margin-top: 30px;
+            animation: titleFloat 3s ease-in-out infinite;
+            z-index: 2;
+        }
+        .final-subtitle {
+            font-size: 16px; color: rgba(255,255,255,0.9);
+            margin-bottom: 30px; font-weight: 300;
+            letter-spacing: 1px; z-index: 2;
+        }
+
+        @keyframes titleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* Photo Frame */
+        .photo-frame-container {
+            position: relative; z-index: 2;
+            margin-bottom: 30px;
+            animation: frameEntrance 1s 0.5s both cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes frameEntrance {
+            from { transform: scale(0) rotate(-10deg); opacity: 0; }
+            to { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .photo-frame {
+            width: 380px; height: 460px;
+            border: 8px solid rgba(255,255,255,0.6);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 4px rgba(255,182,193,0.5),
+                0 20px 60px rgba(0,0,0,0.15),
+                0 0 80px rgba(255,105,180,0.3),
+                inset 0 0 30px rgba(255,255,255,0.1);
+            position: relative;
+            background: #fce4ec;
+        }
+        .photo-frame img {
+            width: 100%; height: 100%; object-fit: cover;
+            position: absolute; top: 0; left: 0;
+            opacity: 0;
+            transition: opacity 1.2s ease-in-out;
+        }
+        .photo-frame img.active { opacity: 1; }
+        .photo-frame .placeholder-text {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #e91e63; font-size: 14px; text-align: center;
+            opacity: 0.6;
+        }
+
+        /* Slide indicators */
+        .slide-dots {
+            display: flex; gap: 8px; justify-content: center;
+            margin-top: 15px; z-index: 5;
+        }
+        .slide-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: rgba(255,255,255,0.4); border: none;
+            cursor: pointer; transition: all 0.3s; padding: 0;
+        }
+        .slide-dot.active {
+            background: #fff; transform: scale(1.3);
+            box-shadow: 0 0 8px rgba(255,255,255,0.6);
+        }
+
+        /* Lotus Flowers around frame */
+        .lotus-wrapper {
+            position: absolute;
+            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.1));
+            animation: lotusBloom 2s ease both;
+        }
+        .lotus-wrapper:nth-child(1) { top: -45px; left: -45px; animation-delay: 0.8s; }
+        .lotus-wrapper:nth-child(2) { top: -45px; right: -45px; animation-delay: 1s; }
+        .lotus-wrapper:nth-child(3) { bottom: -45px; left: -45px; animation-delay: 1.2s; }
+        .lotus-wrapper:nth-child(4) { bottom: -45px; right: -45px; animation-delay: 1.4s; }
+        .lotus-wrapper:nth-child(5) { top: 50%; left: -55px; transform: translateY(-50%); animation-delay: 1.6s; }
+        .lotus-wrapper:nth-child(6) { top: 50%; right: -55px; transform: translateY(-50%); animation-delay: 1.8s; }
+        .lotus-wrapper:nth-child(7) { top: -30px; left: 50%; transform: translateX(-50%); animation-delay: 0.9s; }
+        .lotus-wrapper:nth-child(8) { bottom: -30px; left: 50%; transform: translateX(-50%); animation-delay: 1.3s; }
+
+        @keyframes lotusBloom {
+            from { transform: scale(0) rotate(-30deg); opacity: 0; }
+            to { opacity: 1; }
+        }
+        .lotus-wrapper:nth-child(5) { animation-name: lotusBloomSide; }
+        .lotus-wrapper:nth-child(6) { animation-name: lotusBloomSide; }
+        @keyframes lotusBloomSide {
+            from { transform: translateY(-50%) scale(0) rotate(-30deg); opacity: 0; }
+            to { transform: translateY(-50%) scale(1) rotate(0deg); opacity: 1; }
+        }
+        .lotus-wrapper:nth-child(7) { animation-name: lotusBloomCenter; }
+        .lotus-wrapper:nth-child(8) { animation-name: lotusBloomCenter; }
+        @keyframes lotusBloomCenter {
+            from { transform: translateX(-50%) scale(0) rotate(-30deg); opacity: 0; }
+            to { transform: translateX(-50%) scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        /* Floating elements */
+        .floating-element {
+            position: fixed; z-index: 1;
+            pointer-events: none; opacity: 0;
+            animation: floatUp linear forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(100vh) rotate(0deg) scale(0.5); }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.6; }
+            100% { opacity: 0; transform: translateY(-20vh) rotate(720deg) scale(1); }
+        }
+
+        /* Sparkles */
+        .sparkle {
+            position: fixed; z-index: 1; pointer-events: none;
+            width: 6px; height: 6px; border-radius: 50%;
+            background: white;
+            box-shadow: 0 0 10px 3px rgba(255,255,255,0.6);
+            animation: sparkle 2s ease-in-out infinite;
+        }
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        /* ======================= MUSIC PLAYER ======================= */
+        .music-player {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            z-index: 210; background: #181818;
+            border-top: 1px solid #282828;
+            display: flex; align-items: center;
+            padding: 10px 16px; gap: 14px;
+            animation: playerSlideUp 0.8s 1.5s both cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes playerSlideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .mp-album-art {
+            width: 56px; height: 56px; border-radius: 8px;
+            object-fit: cover; flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .mp-info { flex: 1; min-width: 0; }
+        .mp-title {
+            color: #fff; font-size: 14px; font-weight: 500;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .mp-artist {
+            color: #a7a7a7; font-size: 12px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .mp-controls { display: flex; align-items: center; gap: 12px; }
+        .mp-btn {
+            background: none; border: none; color: #a7a7a7;
+            font-size: 20px; cursor: pointer; transition: color 0.2s;
+            display: flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; padding: 0;
+        }
+        .mp-btn:hover { color: #fff; }
+        .mp-play {
+            background: #1DB954; color: #000; border: none;
+            border-radius: 50%; width: 40px; height: 40px;
+            font-size: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.1s, background 0.2s;
+            box-shadow: 0 2px 10px rgba(29,185,84,0.3);
+        }
+        .mp-play:hover { transform: scale(1.08); background: #1ed760; }
+        .mp-progress-wrap {
+            flex: 2; display: flex; align-items: center; gap: 8px;
+            max-width: 400px;
+        }
+        .mp-time { color: #a7a7a7; font-size: 11px; min-width: 32px; text-align: center; font-variant-numeric: tabular-nums; }
+        .mp-progress {
+            flex: 1; height: 4px; background: #4d4d4d;
+            border-radius: 2px; cursor: pointer; position: relative;
+        }
+        .mp-progress:hover { height: 6px; }
+        .mp-progress:hover .mp-progress-fill { background: #1DB954; }
+        .mp-progress:hover .mp-progress-knob { opacity: 1; }
+        .mp-progress-fill {
+            height: 100%; background: #fff; border-radius: 2px;
+            width: 0%; transition: width 0.3s linear; position: relative;
+        }
+        .mp-progress-knob {
+            position: absolute; right: -6px; top: 50%; transform: translateY(-50%);
+            width: 12px; height: 12px; background: #fff;
+            border-radius: 50%; opacity: 0; transition: opacity 0.2s;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+        .mp-brand {
+            color: #1DB954; font-size: 20px; margin-left: 4px; flex-shrink: 0;
+        }
+        .mp-volume-wrap {
+            display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+        }
+        .mp-vol-btn { font-size: 18px !important; width: 32px !important; height: 32px !important; }
+        .mp-volume-bar {
+            width: 80px; height: 4px; background: #4d4d4d;
+            border-radius: 2px; cursor: pointer; position: relative;
+        }
+        .mp-volume-bar:hover { height: 6px; }
+        .mp-volume-bar:hover .mp-volume-fill { background: #1DB954; }
+        .mp-volume-bar:hover .mp-progress-knob { opacity: 1; }
+        .mp-volume-fill {
+            height: 100%; background: #fff; border-radius: 2px;
+            position: relative; transition: width 0.1s;
+        }
+
+
+        /* Extra Hint Toast */
+        .extra-hint {
+            position: fixed; bottom: 30px; left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: linear-gradient(135deg, #7b1fa2, #e91e63);
+            color: white; padding: 14px 24px; border-radius: 16px;
+            font-size: 14px; font-weight: 500; z-index: 300;
+            box-shadow: 0 8px 30px rgba(233,30,99,0.4);
+            opacity: 0; transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-align: center; max-width: 90%;
+        }
+        .extra-hint.show {
+            opacity: 1; transform: translateX(-50%) translateY(0);
+        }
+
+        /* ======================= RESPONSIVE ======================= */
+        @media (max-width: 768px) {
+            .cs-topbar, .cs-nav { display: none; }
+            .cs-header { padding: 10px 15px; }
+            .cs-logo { font-size: 20px; }
+            .cs-search { margin: 0 10px; }
+            .cs-search input { font-size: 12px; padding: 8px 35px 8px 12px; }
+            .cs-hero { margin: 10px 15px; padding: 20px; flex-direction: column; text-align: center; gap: 10px; }
+            .cs-hero h2 { font-size: 18px; }
+            .cs-hero p { font-size: 12px; }
+            .cs-hero-emoji { font-size: 50px; }
+            .cs-hero-btn { font-size: 12px; padding: 8px 18px; }
+            .cs-products { padding: 10px 15px; }
+            .cs-products h3 { font-size: 16px; }
+            .cs-product-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .cs-product-img { height: 100px; font-size: 40px; }
+            .cs-product-info h4 { font-size: 11px; }
+            .cs-product-price { font-size: 14px; }
+            .cs-product-rating { font-size: 10px; }
+
+            .popup-card { padding: 22px 18px; max-width: 92%; }
+            .popup-title { font-size: 16px; }
+            .popup-desc { font-size: 12px; margin-bottom: 14px; }
+            .popup-icon { font-size: 45px; margin-bottom: 8px; }
+            .popup-hint { font-size: 12px; padding: 10px 14px; }
+            .popup-input { padding: 12px 14px; font-size: 14px; }
+            .popup-btn, .popup-btn-ok { padding: 12px 30px; font-size: 14px; }
+            .popup-cs-badge { font-size: 11px; padding: 5px 12px; }
+
+            .final-title { font-size: 30px; margin-top: 20px; }
+            .final-subtitle { font-size: 13px; margin-bottom: 20px; }
+            .photo-frame { width: 280px; height: 360px; border-width: 6px; }
+            .photo-frame-container { margin-bottom: 20px; }
+
+            .lotus-wrapper { transform: scale(0.6) !important; }
+            .lotus-wrapper:nth-child(1) { top: -30px; left: -25px; }
+            .lotus-wrapper:nth-child(2) { top: -30px; right: -25px; }
+            .lotus-wrapper:nth-child(3) { bottom: -30px; left: -25px; }
+            .lotus-wrapper:nth-child(4) { bottom: -30px; right: -25px; }
+            .lotus-wrapper:nth-child(5) { left: -35px; }
+            .lotus-wrapper:nth-child(6) { right: -35px; }
+            .lotus-wrapper:nth-child(7),
+            .lotus-wrapper:nth-child(8) { display: none; }
+
+            .music-player { padding: 8px 12px; gap: 10px; }
+            .mp-album-art { width: 44px; height: 44px; }
+            .mp-title { font-size: 12px; }
+            .mp-artist { font-size: 10px; }
+            .mp-progress-wrap { display: none; }
+            .mp-play { width: 36px; height: 36px; font-size: 16px; }
+            .mp-btn { width: 28px; height: 28px; font-size: 16px; }
+            .mp-volume-bar { display: none; }
+
+            #final-screen.active { padding-bottom: 90px; }
+        }
+
+        @media (max-width: 400px) {
+            .final-title { font-size: 24px; }
+            .final-subtitle { font-size: 11px; }
+            .photo-frame { width: 230px; height: 300px; border-width: 5px; }
+            .popup-card { padding: 18px 14px; }
+            .popup-title { font-size: 14px; }
+            .popup-icon { font-size: 36px; }
+            .cs-header-icons { gap: 10px; }
+            .cs-header-icons span { font-size: 18px; }
+            .cs-logo { font-size: 17px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ======================== ÇİÇEK SEPETİ BACKGROUND ======================== -->
+<div id="ciceksepeti-bg">
+    <div class="cs-topbar">
+        <span>📞 0850 222 22 22</span>
+        <div>
+            <a href="#">Yardım</a>
+            <a href="#">Sipariş Takibi</a>
+            <a href="#">Kurumsal</a>
+            <a href="#">Üye Ol</a>
+            <a href="#">Giriş Yap</a>
+        </div>
+    </div>
+
+    <div class="cs-header">
+        <div class="cs-logo">Çiçek<span>Dünyası</span></div>
+        <div class="cs-search">
+            <input type="text" placeholder="Çiçek, hediye, pasta ara...">
+            <span class="cs-search-icon">🔍</span>
+        </div>
+        <div class="cs-header-icons">
+            <span>👤</span>
+            <span>❤️</span>
+            <span>🛒</span>
+        </div>
+    </div>
+
+    <div class="cs-nav">
+        <a href="#">🌹 Çiçekler</a>
+        <a href="#">🎂 Pastalar</a>
+        <a href="#">🎁 Hediyelik</a>
+        <a href="#">🍫 Çikolata</a>
+        <a href="#">🧸 Peluş</a>
+        <a href="#">💍 Takı & Aksesuar</a>
+        <a href="#">🏠 Ev & Yaşam</a>
+        <a href="#">🌱 Bitki</a>
+    </div>
+
+    <div class="cs-hero">
+        <div>
+            <h2>Sevdiklerine Özel Çiçekler 💐</h2>
+            <p>Aynı gün teslimat ile sevdiklerinize sürpriz yapın!</p>
+            <button class="cs-hero-btn">Hemen Keşfet</button>
+        </div>
+        <div class="cs-hero-emoji">🌷🌹🌸</div>
+    </div>
+
+    <div class="cs-products">
+        <h3>🔥 Çok Satanlar</h3>
+        <div class="cs-product-grid">
+            <div class="cs-product-card">
+                <div class="cs-product-img" style="background:linear-gradient(135deg,#ffe0e6,#ffb3c1)">🌹</div>
+                <div class="cs-product-info">
+                    <h4>Kırmızı Gül Buketi</h4>
+                    <div class="cs-product-price">₺399</div>
+                    <div class="cs-product-rating">⭐⭐⭐⭐⭐ (2.4k)</div>
+                </div>
+            </div>
+            <div class="cs-product-card">
+                <div class="cs-product-img" style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9)">🌷</div>
+                <div class="cs-product-info">
+                    <h4>Renkli Lale Aranjmanı</h4>
+                    <div class="cs-product-price">₺299</div>
+                    <div class="cs-product-rating">⭐⭐⭐⭐⭐ (1.8k)</div>
+                </div>
+            </div>
+            <div class="cs-product-card">
+                <div class="cs-product-img" style="background:linear-gradient(135deg,#fff3e0,#ffe0b2)">💐</div>
+                <div class="cs-product-info">
+                    <h4>Kır Çiçeği Buketi</h4>
+                    <div class="cs-product-price">₺349</div>
+                    <div class="cs-product-rating">⭐⭐⭐⭐ (956)</div>
+                </div>
+            </div>
+            <div class="cs-product-card">
+                <div class="cs-product-img" style="background:linear-gradient(135deg,#f3e5f5,#e1bee7)">🌸</div>
+                <div class="cs-product-info">
+                    <h4>Orkide Aranjmanı</h4>
+                    <div class="cs-product-price">₺449</div>
+                    <div class="cs-product-rating">⭐⭐⭐⭐⭐ (3.1k)</div>
+                </div>
+            </div>
+            <div class="cs-product-card">
+                <div class="cs-product-img" style="background:linear-gradient(135deg,#fff8e1,#ffecb3)">🌻</div>
+                <div class="cs-product-info">
+                    <h4>Ayçiçeği Buketi</h4>
+                    <div class="cs-product-price">₺279</div>
+                    <div class="cs-product-rating">⭐⭐⭐⭐ (712)</div>
+                </div>
+            </div>
+            <div class="cs-product-card">
+                <div class="cs-product-img" style="background:linear-gradient(135deg,#fce4ec,#f8bbd0)">🌺</div>
+                <div class="cs-product-info">
+                    <h4>Gerbera Aranjmanı</h4>
+                    <div class="cs-product-price">₺329</div>
+                    <div class="cs-product-rating">⭐⭐⭐⭐⭐ (1.2k)</div>
+                </div>
+            </div>
+            <div class="cs-product-card">
+                <div class="cs-product-img" style="background:linear-gradient(135deg,#e0f7fa,#b2ebf2)">🤍</div>
+                <div class="cs-product-info">
+                    <h4>Beyaz Gül Buketi</h4>
+                    <div class="cs-product-price">₺379</div>
+                    <div class="cs-product-rating">⭐⭐⭐⭐ (845)</div>
+                </div>
+            </div>
+            <div class="cs-product-card">
+                <div class="cs-product-img" style="background:linear-gradient(135deg,#fce4ec,#f48fb1)">💝</div>
+                <div class="cs-product-info">
+                    <h4>Aşk Buketi</h4>
+                    <div class="cs-product-price">₺499</div>
+                    <div class="cs-product-rating">⭐⭐⭐⭐⭐ (4.7k)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================== POPUP OVERLAY ======================== -->
+<div id="popup-overlay">
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- STAGE 1: Kod Girişi -->
+    <div id="stage1" class="popup-card">
+        <div class="popup-fake-x" title="Bu reklam kapatılamaz 😏" onclick="fakeClose()">✕</div>
+        <div class="popup-cs-badge">🌸 Çiçek Dünyası Özel Kampanya</div>
+        <div class="popup-icon">🎁</div>
+        <div class="popup-title">Sevgilisiyle Ay Dönümünü Kutlayan Çiftlere Çiçek Dünyası'ndan Sürpriz Hediye!</div>
+        <div class="popup-desc">Aşağıdaki güvenlik kodunu girerek hediyenize ulaşabilirsiniz. Kampanya süresi sınırlıdır!</div>
+        <div class="popup-hint">
+            <span class="popup-hint-icon">💡</span>
+            <span><strong>İpucu:</strong> Sevgilinin en sevdiği tatlı 🍰</span>
+        </div>
+        <input type="text" id="code-input-1" class="popup-input" placeholder="Kodu buraya girin..." autocomplete="off" spellcheck="false">
+        <div id="error-msg-1" class="popup-error-msg"></div>
+        <button class="popup-btn" onclick="checkCode1()">🎁 Hediyemi Göster!</button>
+    </div>
+
+    <!-- STAGE 2: Tebrikler -->
+    <div id="stage2" class="popup-card hidden-stage">
+        <div class="popup-icon">🎉</div>
+        <div class="popup-title" style="color: #2e7d32;">Tebrikler, Kazandınız!</div>
+        <div class="popup-desc">Hediyenize ulaşmak için devam edin. Çok şanslısınız! 🍀</div>
+        <button class="popup-btn-ok" onclick="goToStage3()">Tamam ✓</button>
+    </div>
+
+    <!-- STAGE 3: Kandırmaca - Tekrar Sor -->
+    <div id="stage3" class="popup-card hidden-stage stage-trick">
+        <div class="popup-fake-x" title="Hayır hayır, kaçamazsın 😈" onclick="fakeClose()">✕</div>
+        <div class="popup-icon">😏</div>
+        <div class="popup-title">Bu Kadar Kolay Kurtulabileceğini mi Sandın?</div>
+        <div class="popup-desc">Hatalı cevap verdin! Güvenlik doğrulaması başarısız. Tekrar cevapla! 🔒</div>
+        <div class="popup-hint">
+            <span class="popup-hint-icon">💡</span>
+            <span><strong>İpucu:</strong> Sevgilinin en sevdiği tatlı 🍰</span>
+        </div>
+        <input type="text" id="code-input-2" class="popup-input" placeholder="Kodu buraya girin..." autocomplete="off" spellcheck="false">
+        <div id="error-msg-2" class="popup-error-msg"></div>
+        <button class="popup-btn" style="background: linear-gradient(135deg, #e53935, #c62828);" onclick="checkCode2()">🔐 Doğrula</button>
+    </div>
+
+    <!-- STAGE 4: Gerçekten Başardın -->
+    <!-- STAGE 4: Bilemedi → Şaka Şaka → Tebrikler Bildin -->
+    <div id="stage4" class="popup-card hidden-stage stage-gotcha">
+        <div class="popup-icon" id="gotcha-icon">😢</div>
+        <div class="popup-title" id="gotcha-title">Yine Bilemedi...</div>
+        <div class="popup-desc" id="gotcha-desc"><span class="typing-dots"></span></div>
+        <button class="popup-btn-ok" id="gotcha-btn" style="display:none; background: linear-gradient(135deg, #2e7d32, #43a047);" onclick="goToFinal()">Tamam 🎁</button>
+    </div>
+</div>
+
+<!-- Extra Hint Toast -->
+<div class="extra-hint" id="extra-hint">💡 Ekstra İpucu: İnsan kendini nası bilmez yauv 💕</div>
+
+<!-- ======================== FINAL SCREEN ======================== -->
+<div id="final-screen">
+    <h1 class="final-title">19. Ayımız Kutlu Olsun ❤️</h1>
+    <p class="final-subtitle">Seninle geçen her an bir ömre bedel...</p>
+
+    <div class="photo-frame-container">
+        <!-- Lotus Flowers around the frame -->
+        <div class="lotus-wrapper" style="width:90px;height:80px;">
+            <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+                <defs><radialGradient id="lp1a" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#fff5f7"/><stop offset="50%" stop-color="#ffb6c1"/><stop offset="100%" stop-color="#ff69b4"/></radialGradient><radialGradient id="lp1b" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#ffe4e9"/><stop offset="50%" stop-color="#ff91a4"/><stop offset="100%" stop-color="#ff1493"/></radialGradient><radialGradient id="lc1" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff8dc"/><stop offset="100%" stop-color="#ffd700"/></radialGradient></defs>
+                <g opacity="0.7"><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp1a)" transform="rotate(-50,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp1a)" transform="rotate(-25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp1a)" transform="rotate(0,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp1a)" transform="rotate(25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp1a)" transform="rotate(50,100,110)"/></g>
+                <g><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp1b)" transform="rotate(-35,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp1b)" transform="rotate(-12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp1b)" transform="rotate(12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp1b)" transform="rotate(35,100,110)"/></g>
+                <circle cx="100" cy="105" r="12" fill="url(#lc1)"/><circle cx="94" cy="100" r="2.5" fill="#DAA520" opacity="0.7"/><circle cx="106" cy="100" r="2.5" fill="#DAA520" opacity="0.7"/><circle cx="100" cy="96" r="2.5" fill="#DAA520" opacity="0.7"/><circle cx="91" cy="107" r="2" fill="#DAA520" opacity="0.5"/><circle cx="109" cy="107" r="2" fill="#DAA520" opacity="0.5"/>
+            </svg>
+        </div>
+        <div class="lotus-wrapper" style="width:90px;height:80px;">
+            <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+                <defs><radialGradient id="lp2a" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#fff0f5"/><stop offset="50%" stop-color="#f8bbd0"/><stop offset="100%" stop-color="#ec407a"/></radialGradient><radialGradient id="lp2b" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#fce4ec"/><stop offset="50%" stop-color="#f48fb1"/><stop offset="100%" stop-color="#e91e63"/></radialGradient><radialGradient id="lc2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fffde7"/><stop offset="100%" stop-color="#ffca28"/></radialGradient></defs>
+                <g opacity="0.7"><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp2a)" transform="rotate(-50,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp2a)" transform="rotate(-25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp2a)" transform="rotate(0,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp2a)" transform="rotate(25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp2a)" transform="rotate(50,100,110)"/></g>
+                <g><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp2b)" transform="rotate(-35,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp2b)" transform="rotate(-12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp2b)" transform="rotate(12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp2b)" transform="rotate(35,100,110)"/></g>
+                <circle cx="100" cy="105" r="12" fill="url(#lc2)"/><circle cx="94" cy="100" r="2.5" fill="#DAA520" opacity="0.7"/><circle cx="106" cy="100" r="2.5" fill="#DAA520" opacity="0.7"/><circle cx="100" cy="96" r="2.5" fill="#DAA520" opacity="0.7"/>
+            </svg>
+        </div>
+        <div class="lotus-wrapper" style="width:90px;height:80px;">
+            <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+                <defs><radialGradient id="lp3a" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#fff5f7"/><stop offset="50%" stop-color="#ffcdd2"/><stop offset="100%" stop-color="#ef5350"/></radialGradient><radialGradient id="lp3b" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#ffebee"/><stop offset="50%" stop-color="#ef9a9a"/><stop offset="100%" stop-color="#e53935"/></radialGradient><radialGradient id="lc3" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff8dc"/><stop offset="100%" stop-color="#ffd700"/></radialGradient></defs>
+                <g opacity="0.7"><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp3a)" transform="rotate(-50,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp3a)" transform="rotate(-25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp3a)" transform="rotate(0,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp3a)" transform="rotate(25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp3a)" transform="rotate(50,100,110)"/></g>
+                <g><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp3b)" transform="rotate(-35,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp3b)" transform="rotate(-12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp3b)" transform="rotate(12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp3b)" transform="rotate(35,100,110)"/></g>
+                <circle cx="100" cy="105" r="12" fill="url(#lc3)"/><circle cx="94" cy="100" r="2.5" fill="#DAA520" opacity="0.7"/><circle cx="106" cy="100" r="2.5" fill="#DAA520" opacity="0.7"/><circle cx="100" cy="96" r="2.5" fill="#DAA520" opacity="0.7"/>
+            </svg>
+        </div>
+        <div class="lotus-wrapper" style="width:90px;height:80px;">
+            <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+                <defs><radialGradient id="lp4a" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#fce4ec"/><stop offset="50%" stop-color="#f8bbd0"/><stop offset="100%" stop-color="#ec407a"/></radialGradient><radialGradient id="lp4b" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#fff0f5"/><stop offset="50%" stop-color="#ff80ab"/><stop offset="100%" stop-color="#f50057"/></radialGradient><radialGradient id="lc4" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fffde7"/><stop offset="100%" stop-color="#ffc107"/></radialGradient></defs>
+                <g opacity="0.7"><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp4a)" transform="rotate(-50,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp4a)" transform="rotate(-25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp4a)" transform="rotate(0,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp4a)" transform="rotate(25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp4a)" transform="rotate(50,100,110)"/></g>
+                <g><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp4b)" transform="rotate(-35,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp4b)" transform="rotate(-12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp4b)" transform="rotate(12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp4b)" transform="rotate(35,100,110)"/></g>
+                <circle cx="100" cy="105" r="12" fill="url(#lc4)"/><circle cx="94" cy="100" r="2.5" fill="#DAA520" opacity="0.7"/><circle cx="106" cy="100" r="2.5" fill="#DAA520" opacity="0.7"/><circle cx="100" cy="96" r="2.5" fill="#DAA520" opacity="0.7"/>
+            </svg>
+        </div>
+        <div class="lotus-wrapper" style="width:80px;height:70px;">
+            <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+                <defs><radialGradient id="lp5a" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#fff5f7"/><stop offset="50%" stop-color="#ffb6c1"/><stop offset="100%" stop-color="#ff69b4"/></radialGradient><radialGradient id="lp5b" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#ffe4e9"/><stop offset="50%" stop-color="#ff91a4"/><stop offset="100%" stop-color="#ff1493"/></radialGradient></defs>
+                <g opacity="0.7"><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp5a)" transform="rotate(-50,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp5a)" transform="rotate(-25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp5a)" transform="rotate(0,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp5a)" transform="rotate(25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp5a)" transform="rotate(50,100,110)"/></g>
+                <g><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp5b)" transform="rotate(-35,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp5b)" transform="rotate(-12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp5b)" transform="rotate(12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp5b)" transform="rotate(35,100,110)"/></g>
+                <circle cx="100" cy="105" r="10" fill="#ffd700"/>
+            </svg>
+        </div>
+        <div class="lotus-wrapper" style="width:80px;height:70px;">
+            <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+                <defs><radialGradient id="lp6a" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#fce4ec"/><stop offset="50%" stop-color="#f48fb1"/><stop offset="100%" stop-color="#e91e63"/></radialGradient><radialGradient id="lp6b" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#fff0f5"/><stop offset="50%" stop-color="#ff80ab"/><stop offset="100%" stop-color="#c2185b"/></radialGradient></defs>
+                <g opacity="0.7"><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp6a)" transform="rotate(-50,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp6a)" transform="rotate(-25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp6a)" transform="rotate(0,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp6a)" transform="rotate(25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp6a)" transform="rotate(50,100,110)"/></g>
+                <g><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp6b)" transform="rotate(-35,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp6b)" transform="rotate(-12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp6b)" transform="rotate(12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp6b)" transform="rotate(35,100,110)"/></g>
+                <circle cx="100" cy="105" r="10" fill="#ffc107"/>
+            </svg>
+        </div>
+        <div class="lotus-wrapper" style="width:75px;height:65px;">
+            <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+                <defs><radialGradient id="lp7a" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#fff5f7"/><stop offset="50%" stop-color="#ffcdd2"/><stop offset="100%" stop-color="#e57373"/></radialGradient><radialGradient id="lp7b" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#ffebee"/><stop offset="50%" stop-color="#ef9a9a"/><stop offset="100%" stop-color="#ef5350"/></radialGradient></defs>
+                <g opacity="0.7"><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp7a)" transform="rotate(-50,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp7a)" transform="rotate(-25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp7a)" transform="rotate(0,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp7a)" transform="rotate(25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp7a)" transform="rotate(50,100,110)"/></g>
+                <g><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp7b)" transform="rotate(-35,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp7b)" transform="rotate(-12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp7b)" transform="rotate(12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp7b)" transform="rotate(35,100,110)"/></g>
+                <circle cx="100" cy="105" r="10" fill="#ffd54f"/>
+            </svg>
+        </div>
+        <div class="lotus-wrapper" style="width:75px;height:65px;">
+            <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+                <defs><radialGradient id="lp8a" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#fce4ec"/><stop offset="50%" stop-color="#f8bbd0"/><stop offset="100%" stop-color="#e91e63"/></radialGradient><radialGradient id="lp8b" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#fff0f5"/><stop offset="50%" stop-color="#f48fb1"/><stop offset="100%" stop-color="#c2185b"/></radialGradient></defs>
+                <g opacity="0.7"><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp8a)" transform="rotate(-50,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp8a)" transform="rotate(-25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp8a)" transform="rotate(0,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp8a)" transform="rotate(25,100,110)"/><ellipse cx="100" cy="55" rx="16" ry="50" fill="url(#lp8a)" transform="rotate(50,100,110)"/></g>
+                <g><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp8b)" transform="rotate(-35,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp8b)" transform="rotate(-12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp8b)" transform="rotate(12,100,110)"/><ellipse cx="100" cy="65" rx="12" ry="38" fill="url(#lp8b)" transform="rotate(35,100,110)"/></g>
+                <circle cx="100" cy="105" r="10" fill="#ffc107"/>
+            </svg>
+        </div>
+
+        <!-- Photo Frame - Slideshow -->
+        <div class="photo-frame" id="photo-frame">
+            <!-- JS otomatik olarak foto1.jpg, foto2.jpg, ... yükler -->
+        </div>
+        <div class="slide-dots" id="slide-dots"></div>
+    </div>
+
+    <!-- Spotify Görünümlü Music Player -->
+    <div class="music-player">
+        <img class="mp-album-art" src="foto1.jpg" alt="Album" onerror="this.style.background='linear-gradient(135deg,#e91e63,#9c27b0)'">
+        <div class="mp-info">
+            <div class="mp-title">Tüm Bir Yaşam</div>
+            <div class="mp-artist">Erol Evgin & Atiye</div>
+        </div>
+        <div class="mp-controls">
+            <button class="mp-btn" onclick="seekBy(-10)" title="10s Geri">⏪</button>
+            <button class="mp-play" id="mp-play-btn" onclick="togglePlay()" title="Oynat">▶</button>
+            <button class="mp-btn" onclick="seekBy(10)" title="10s İleri">⏩</button>
+        </div>
+        <div class="mp-progress-wrap">
+            <span class="mp-time" id="mp-current">0:00</span>
+            <div class="mp-progress" id="mp-progress" onclick="seekTo(event)">
+                <div class="mp-progress-fill" id="mp-fill">
+                    <div class="mp-progress-knob"></div>
+                </div>
+            </div>
+            <span class="mp-time" id="mp-duration">0:00</span>
+        </div>
+        <div class="mp-volume-wrap">
+            <button class="mp-btn mp-vol-btn" id="mp-vol-icon" onclick="toggleMute()" title="Ses">🔊</button>
+            <div class="mp-volume-bar" id="mp-vol-bar" onclick="setVolume(event)">
+                <div class="mp-volume-fill" id="mp-vol-fill" style="width:100%">
+                    <div class="mp-progress-knob"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Element -->
+    <audio id="bg-music" loop preload="auto">
+        <source src="sarki.mp3" type="audio/mpeg">
+    </audio>
+</div>
+
+<script>
+    // ======================= PREVENT CLOSE =======================
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') e.preventDefault();
+        if (e.key === 'F5') e.preventDefault();
+        if (e.ctrlKey && e.key === 'w') e.preventDefault();
+    });
+
+    // Fake close button
+    let fakeCloseCount = 0;
+    const fakeCloseMessages = [
+        'Bu reklam kapatılamaz 😏',
+        'Denemeye devam et, olmayacak 😄',
+        'Vazgeç, kodu bul! 🔐',
+        'Hayır, kaçış yok! 🚫',
+        'Kodu girersen kurtulursun 💡',
+    ];
+    function fakeClose() {
+        const msg = fakeCloseMessages[fakeCloseCount % fakeCloseMessages.length];
+        fakeCloseCount++;
+        // Show a mini toast
+        showToast(msg);
+    }
+
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #333; color: white; padding: 12px 24px; border-radius: 25px;
+            font-size: 14px; z-index: 9999; font-family: 'Poppins', sans-serif;
+            animation: toastIn 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.3s, transform 0.3s';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(-10px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 2000);
+    }
+
+    // Add toast animation
+    const toastStyle = document.createElement('style');
+    toastStyle.textContent = '@keyframes toastIn { from { opacity:0; transform: translateX(-50%) translateY(-10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }';
+    document.head.appendChild(toastStyle);
+
+    // ======================= STAGE MANAGEMENT =======================
+    function hideAllStages() {
+        document.querySelectorAll('.popup-card').forEach(el => el.classList.add('hidden-stage'));
+    }
+
+    function showStage(id) {
+        hideAllStages();
+        const stage = document.getElementById(id);
+        stage.classList.remove('hidden-stage');
+        stage.style.animation = 'none';
+        stage.offsetHeight; // reflow
+        stage.style.animation = 'popupSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    }
+
+    // ======================= STAGE 1: Code Check =======================
+    const input1 = document.getElementById('code-input-1');
+    input1.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') checkCode1();
+    });
+
+    function checkCode1() {
+        const val = input1.value.trim().toLocaleLowerCase('tr-TR');
+        if (val === 'bisküvili pasta' || val === 'biskuvili pasta' || val === 'bisküvilipasta') {
+            input1.classList.remove('error');
+            document.getElementById('error-msg-1').textContent = '';
+            showStage('stage2');
+            launchConfetti();
+        } else {
+            input1.classList.add('error');
+            document.getElementById('error-msg-1').textContent = '❌ Yanlış kod! Tekrar deneyin.';
+            setTimeout(() => input1.classList.remove('error'), 600);
+        }
+    }
+
+    // ======================= STAGE 2 → 3 =======================
+    function goToStage3() {
+        showStage('stage3');
+        setTimeout(() => document.getElementById('code-input-2').focus(), 500);
+    }
+
+    // ======================= STAGE 3: Code Check 2 =======================
+    let attemptCount2 = 0;
+    const input2 = document.getElementById('code-input-2');
+    input2.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') checkCode2();
+    });
+
+    function checkCode2() {
+        const val = input2.value.trim().toLocaleLowerCase('tr-TR');
+        if (val === 'hanım' || val === 'hanim' || val === 'hanm') {
+            input2.classList.remove('error');
+            document.getElementById('error-msg-2').textContent = '';
+            goToStage4();
+        } else {
+            attemptCount2++;
+            input2.classList.add('error');
+            document.getElementById('error-msg-2').textContent = '❌ Yanlış kod! Tekrar deneyin.';
+            setTimeout(() => input2.classList.remove('error'), 600);
+            
+            // 10. deneme ve sonrasındaki her 5 denemede (10, 15, 20...) ekstra ipucu
+            if (attemptCount2 === 10 || (attemptCount2 > 10 && (attemptCount2 - 10) % 5 === 0)) {
+                showExtraHint();
+            }
+        }
+    }
+
+    function showExtraHint() {
+        const hint = document.getElementById('extra-hint');
+        hint.classList.add('show');
+        setTimeout(() => hint.classList.remove('show'), 2000);
+    }
+
+    // ======================= STAGE 4: Bilemedi → Şaka → Tebrikler =======================
+    function goToStage4() {
+        showStage('stage4');
+        const icon = document.getElementById('gotcha-icon');
+        const title = document.getElementById('gotcha-title');
+        const desc = document.getElementById('gotcha-desc');
+        const btn = document.getElementById('gotcha-btn');
+
+        // Phase 1: Bilemedi :(
+        icon.textContent = '😢';
+        title.textContent = 'Yine Bilemedi...';
+        title.style.color = '#c62828';
+        desc.innerHTML = '<span class="typing-dots"></span>';
+        btn.style.display = 'none';
+
+        // Phase 2: Şaka şaka!
+        setTimeout(() => {
+            icon.textContent = '😜';
+            title.textContent = 'Şaka Şaka!';
+            title.style.color = '#7b1fa2';
+            desc.innerHTML = 'Kandırdım! 😄🎉';
+            launchConfetti();
+        }, 2500);
+
+        // Phase 3: Tebrikler bildin!
+        setTimeout(() => {
+            icon.textContent = '🎊';
+            title.textContent = 'Tebrikler, Bildin!';
+            title.style.color = '#2e7d32';
+            desc.innerHTML = 'Helal sana! 🥳🎉<br><br><strong>OK\'a bas, kap hediyeni! 🎁</strong>';
+            btn.style.display = 'inline-block';
+            btn.style.animation = 'popupSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            launchConfetti();
+        }, 5000);
+    }
+
+    // ======================= STAGE 5 → FINAL =======================
+    function goToFinal() {
+        // Hide popup and background
+        document.getElementById('popup-overlay').classList.add('hidden');
+        document.getElementById('ciceksepeti-bg').classList.add('hidden');
+
+        // Show final screen
+        const final = document.getElementById('final-screen');
+        final.style.display = 'flex';
+        setTimeout(() => final.classList.add('active'), 50);
+
+        // Create floating elements
+        createFloatingElements();
+        createSparkles();
+
+        // Müziği otomatik başlat
+        setTimeout(() => {
+            const a = document.getElementById('bg-music');
+            a.play().catch(() => {});
+        }, 1000);
+
+        // Slideshow'u başlat
+        initSlideshow();
+    }
+
+    // ======================= PHOTO SLIDESHOW =======================
+    let slides = [];
+    let currentSlide = 0;
+    let slideTimer = null;
+
+    function initSlideshow() {
+        const frame = document.getElementById('photo-frame');
+        const dotsContainer = document.getElementById('slide-dots');
+        let i = 1;
+
+        function tryLoad() {
+            const img = new Image();
+            img.src = 'foto' + i + '.jpg';
+            img.onload = function() {
+                const slideImg = document.createElement('img');
+                slideImg.src = img.src;
+                slideImg.alt = 'Fotoğraf ' + i;
+                if (slides.length === 0) slideImg.classList.add('active');
+                frame.appendChild(slideImg);
+                slides.push(slideImg);
+
+                // Dot ekle
+                const dot = document.createElement('button');
+                dot.className = 'slide-dot' + (slides.length === 1 ? ' active' : '');
+                dot.onclick = function() { goToSlide(slides.indexOf(slideImg)); };
+                dotsContainer.appendChild(dot);
+
+                i++;
+                tryLoad();
+            };
+            img.onerror = function() {
+                // Başka foto yok, timer başlat
+                if (slides.length > 1) {
+                    slideTimer = setInterval(nextSlide, 4000);
+                }
+                if (slides.length === 0) {
+                    // Hiç foto yoksa placeholder göster
+                    frame.innerHTML = '<div class="placeholder-text" style="display:block;">📷<br>foto1.jpg, foto2.jpg... ekle</div>';
+                }
+            };
+        }
+        tryLoad();
+    }
+
+    function nextSlide() {
+        goToSlide((currentSlide + 1) % slides.length);
+    }
+
+    function goToSlide(idx) {
+        slides[currentSlide].classList.remove('active');
+        document.querySelectorAll('.slide-dot')[currentSlide].classList.remove('active');
+        currentSlide = idx;
+        slides[currentSlide].classList.add('active');
+        document.querySelectorAll('.slide-dot')[currentSlide].classList.add('active');
+    }
+
+    // ======================= MUSIC PLAYER =======================
+    const audio = document.getElementById('bg-music');
+    const playBtn = document.getElementById('mp-play-btn');
+    const fillBar = document.getElementById('mp-fill');
+    const curEl = document.getElementById('mp-current');
+    const durEl = document.getElementById('mp-duration');
+
+    function togglePlay() {
+        if (audio.paused) {
+            audio.play().catch(() => {});
+        } else {
+            audio.pause();
+        }
+    }
+
+    audio.addEventListener('play', () => { playBtn.textContent = '⏸'; });
+    audio.addEventListener('pause', () => { playBtn.textContent = '▶'; });
+
+    audio.addEventListener('timeupdate', () => {
+        if (audio.duration) {
+            fillBar.style.width = (audio.currentTime / audio.duration * 100) + '%';
+            curEl.textContent = fmt(audio.currentTime);
+        }
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+        durEl.textContent = fmt(audio.duration);
+    });
+
+    // Bazen loadedmetadata geç gelir, durationchange da dinle
+    audio.addEventListener('durationchange', () => {
+        if (audio.duration && isFinite(audio.duration)) {
+            durEl.textContent = fmt(audio.duration);
+        }
+    });
+
+    function seekBy(s) {
+        audio.currentTime = Math.max(0, Math.min(audio.duration || 0, audio.currentTime + s));
+    }
+
+    function seekTo(e) {
+        const bar = document.getElementById('mp-progress');
+        const rect = bar.getBoundingClientRect();
+        const pct = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = pct * (audio.duration || 0);
+    }
+
+    function fmt(s) {
+        const m = Math.floor(s / 60);
+        const sec = Math.floor(s % 60);
+        return m + ':' + (sec < 10 ? '0' : '') + sec;
+    }
+
+    // ======================= VOLUME CONTROL =======================
+    let savedVol = 1;
+
+    function toggleMute() {
+        if (audio.muted || audio.volume === 0) {
+            audio.muted = false;
+            audio.volume = savedVol || 0.5;
+        } else {
+            savedVol = audio.volume;
+            audio.muted = true;
+        }
+        updateVolUI();
+    }
+
+    function setVolume(e) {
+        const bar = document.getElementById('mp-vol-bar');
+        const rect = bar.getBoundingClientRect();
+        let pct = (e.clientX - rect.left) / rect.width;
+        pct = Math.max(0, Math.min(1, pct));
+        audio.volume = pct;
+        audio.muted = false;
+        savedVol = pct;
+        updateVolUI();
+    }
+
+    function updateVolUI() {
+        const vol = audio.muted ? 0 : audio.volume;
+        document.getElementById('mp-vol-fill').style.width = (vol * 100) + '%';
+        const icon = document.getElementById('mp-vol-icon');
+        if (vol === 0 || audio.muted) icon.textContent = '🔇';
+        else if (vol < 0.4) icon.textContent = '🔉';
+        else icon.textContent = '🔊';
+    }
+
+    // ======================= CONFETTI =======================
+    function launchConfetti() {
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        canvas.style.display = 'block';
+
+        const pieces = [];
+        const colors = ['#ff0000', '#00c853', '#2979ff', '#ffea00', '#ff4081',
+                        '#00e5ff', '#ff6d00', '#d500f9', '#76ff03', '#ffd600'];
+
+        for (let i = 0; i < 180; i++) {
+            pieces.push({
+                x: Math.random() * canvas.width,
+                y: -20 - Math.random() * canvas.height * 0.5,
+                w: Math.random() * 10 + 5,
+                h: Math.random() * 6 + 3,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                speed: Math.random() * 4 + 2,
+                angle: Math.random() * Math.PI * 2,
+                spin: (Math.random() - 0.5) * 0.3,
+                drift: (Math.random() - 0.5) * 3,
+                opacity: 1
+            });
+        }
+
+        let frame = 0;
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let active = false;
+
+            pieces.forEach(p => {
+                if (p.y < canvas.height + 20 && p.opacity > 0) active = true;
+                p.y += p.speed;
+                p.x += p.drift;
+                p.angle += p.spin;
+                if (frame > 120) p.opacity -= 0.01;
+                if (p.opacity < 0) p.opacity = 0;
+
+                ctx.save();
+                ctx.globalAlpha = p.opacity;
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                ctx.restore();
+            });
+
+            frame++;
+            if (active && frame < 300) {
+                requestAnimationFrame(animate);
+            } else {
+                canvas.style.display = 'none';
+            }
+        }
+        animate();
+    }
+
+    // ======================= FLOATING ELEMENTS =======================
+    function createFloatingElements() {
+        const elements = ['🌸', '💕', '✨', '🌷', '💗', '🩷', '🌺', '❤️', '💐', '🦋'];
+        const container = document.getElementById('final-screen');
+
+        function spawnElement() {
+            const el = document.createElement('div');
+            el.className = 'floating-element';
+            el.textContent = elements[Math.floor(Math.random() * elements.length)];
+            el.style.left = Math.random() * 100 + '%';
+            el.style.fontSize = (Math.random() * 20 + 14) + 'px';
+            el.style.animationDuration = (Math.random() * 6 + 6) + 's';
+            el.style.animationDelay = Math.random() * 2 + 's';
+            container.appendChild(el);
+
+            setTimeout(() => el.remove(), 14000);
+        }
+
+        // Initial burst
+        for (let i = 0; i < 15; i++) {
+            setTimeout(spawnElement, i * 200);
+        }
+
+        // Continuous
+        setInterval(spawnElement, 800);
+    }
+
+    function createSparkles() {
+        const container = document.getElementById('final-screen');
+
+        function spawnSparkle() {
+            const s = document.createElement('div');
+            s.className = 'sparkle';
+            s.style.left = Math.random() * 100 + '%';
+            s.style.top = Math.random() * 80 + '%';
+            s.style.animationDelay = Math.random() * 3 + 's';
+            s.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+            container.appendChild(s);
+
+            setTimeout(() => s.remove(), 8000);
+        }
+
+        for (let i = 0; i < 20; i++) {
+            setTimeout(spawnSparkle, i * 150);
+        }
+        setInterval(spawnSparkle, 600);
+    }
+
+
+
+    // ======================= INITIAL SETUP =======================
+    // Blur background when popup appears
+    setTimeout(() => {
+        document.getElementById('ciceksepeti-bg').classList.add('blurred');
+    }, 1200);
+
+    // Focus first input
+    setTimeout(() => {
+        document.getElementById('code-input-1').focus();
+    }, 2500);
+</script>
+
+</body>
+</html>
